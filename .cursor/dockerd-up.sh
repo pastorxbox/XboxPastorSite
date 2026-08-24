@@ -11,7 +11,9 @@ fi
 # Clear a stale pid file left over from a previous boot/snapshot.
 sudo rm -f /var/run/docker.pid
 
-sudo bash -c 'nohup dockerd >/var/log/dockerd.log 2>&1 &'
+# setsid fully detaches dockerd into its own session so it survives after this
+# script (and the boot-time `start` shell that invokes it) returns.
+sudo bash -c 'setsid dockerd </dev/null >/var/log/dockerd.log 2>&1 &'
 
 for _ in $(seq 1 60); do
   if sudo docker info >/dev/null 2>&1; then
