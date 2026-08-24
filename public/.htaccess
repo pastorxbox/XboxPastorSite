@@ -4,6 +4,7 @@ Options -Indexes
 <IfModule mod_rewrite.c>
     RewriteEngine On
     RewriteRule ^health/?$ health.php [L]
+    RewriteRule ^rss\.xml$ rss.php [L]
     RewriteRule ^api/?$ api/index.php [L]
     RewriteRule ^api/posts/?$ api/index.php [L]
     RewriteRule ^api/posts/([0-9]+)/?$ api/index.php [L]

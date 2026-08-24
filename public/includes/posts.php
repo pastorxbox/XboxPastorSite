@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 const POSTS_PER_PAGE = 10;
+const RSS_ITEMS_LIMIT = 50;
 
 function posts_get_published_by_id(PDO $pdo, int $id): ?array
 {
@@ -96,6 +97,25 @@ function posts_list_published(PDO $pdo, int $page, int $perPage = POSTS_PER_PAGE
     $stmt->bindValue('status', 'published');
     $stmt->bindValue('limit', $perPage, PDO::PARAM_INT);
     $stmt->bindValue('offset', $offset, PDO::PARAM_INT);
+    $stmt->execute();
+
+    return $stmt->fetchAll();
+}
+
+/**
+ * @return list<array<string, mixed>>
+ */
+function posts_list_published_for_feed(PDO $pdo, int $limit = RSS_ITEMS_LIMIT): array
+{
+    $stmt = $pdo->prepare(
+        'SELECT id, title, body, published_at
+         FROM posts
+         WHERE status = :status
+         ORDER BY published_at DESC, id DESC
+         LIMIT :limit'
+    );
+    $stmt->bindValue('status', 'published');
+    $stmt->bindValue('limit', $limit, PDO::PARAM_INT);
     $stmt->execute();
 
     return $stmt->fetchAll();

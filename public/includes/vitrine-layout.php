@@ -24,7 +24,8 @@ function render_vitrine_page(array $config, string $pageTitle, string $mainHtml,
     $xScreenName = preg_replace('/[^A-Za-z0-9_]/', '', (string) ($config['x_screen_name'] ?? 'PastorXbox')) ?: 'PastorXbox';
     $xProfileUrl = 'https://x.com/' . rawurlencode($xScreenName);
     $gaMeasurementId = trim((string) ($config['ga_measurement_id'] ?? ''));
-    $assetVersion = '20260824f3';
+    $assetVersion = '20260824rss';
+    $rssFeedUrl = htmlspecialchars(rtrim((string) ($config['site_base_url'] ?? ''), '/') . '/rss.xml', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
     $canonical = isset($meta['canonical']) ? htmlspecialchars((string) $meta['canonical'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') : '';
     $ogTitle = isset($meta['og_title']) ? htmlspecialchars((string) $meta['og_title'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') : $title;
     $ogDescription = isset($meta['og_description']) ? htmlspecialchars((string) $meta['og_description'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') : '';
@@ -54,6 +55,7 @@ function render_vitrine_page(array $config, string $pageTitle, string $mainHtml,
     <?php if ($ogUrl !== ''): ?>
     <meta property="og:url" content="<?= $ogUrl ?>">
     <?php endif; ?>
+    <link rel="alternate" type="application/rss+xml" title="<?= $siteName ?> — RSS" href="<?= $rssFeedUrl ?>">
     <link rel="stylesheet" href="/assets/css/vitrine.css?v=<?= $assetVersion ?>">
 </head>
 <body data-ga-id="<?= htmlspecialchars($gaMeasurementId, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>">
