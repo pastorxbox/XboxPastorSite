@@ -7,7 +7,7 @@ todos:
     status: completed
   - id: fase-2
     content: "Fase 2 — Layout vitrine: duas colunas, ads, tweets @PastorXbox, aviso cookies/GA"
-    status: pending
+    status: completed
   - id: fase-3
     content: "Fase 3 — MySQL + URLs ?p=: schema, home, artigo, 404, /health, seed manual"
     status: pending
