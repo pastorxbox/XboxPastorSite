@@ -1,6 +1,6 @@
 .env
 mysql-data/
-public/uploads/
+public/uploads/*
 !public/uploads/.gitkeep
 !public/uploads/.htaccess
 *.log
