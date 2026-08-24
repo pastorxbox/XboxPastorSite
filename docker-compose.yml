@@ -1,0 +1,57 @@
+# Fase 1 — stack local. Document root = ./public (config fica fora da web).
+# Arranque: docker compose up --build
+# Site: http://localhost:8080
+# phpMyAdmin (só nesta máquina): http://localhost:8081
+
+services:
+  web:
+    build:
+      context: ./docker/php
+    ports:
+      - "8080:80"
+    env_file:
+      - .env
+    environment:
+      DB_HOST: mysql
+    volumes:
+      - ./public:/var/www/html
+      - ./config:/var/www/config:ro
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: unless-stopped
+
+  mysql:
+    image: mysql:8.0
+    env_file:
+      - .env
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+
+  phpmyadmin:
+    image: phpmyadmin:5
+    ports:
+      - "127.0.0.1:8081:80"
+    environment:
+      PMA_HOST: mysql
+      PMA_USER: ${DB_USER}
+      PMA_PASSWORD: ${DB_PASSWORD}
+      UPLOAD_LIMIT: 64M
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  mysql_data:

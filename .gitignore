@@ -1,0 +1,6 @@
+.env
+mysql-data/
+public/uploads/
+*.log
+.DS_Store
+Thumbs.db
