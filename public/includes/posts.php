@@ -22,6 +22,56 @@ function posts_get_published_by_id(PDO $pdo, int $id): ?array
     return $post !== false ? $post : null;
 }
 
+function posts_get_by_id(PDO $pdo, int $id): ?array
+{
+    $stmt = $pdo->prepare(
+        'SELECT id, title, body, status, published_at
+         FROM posts
+         WHERE id = :id
+         LIMIT 1'
+    );
+    $stmt->execute(['id' => $id]);
+
+    $post = $stmt->fetch();
+
+    return $post !== false ? $post : null;
+}
+
+function posts_create(PDO $pdo, string $title, string $body, string $status, ?string $publishedAt): int
+{
+    $stmt = $pdo->prepare(
+        'INSERT INTO posts (title, body, status, published_at)
+         VALUES (:title, :body, :status, :published_at)'
+    );
+    $stmt->execute([
+        'title' => $title,
+        'body' => $body,
+        'status' => $status,
+        'published_at' => $publishedAt,
+    ]);
+
+    return (int) $pdo->lastInsertId();
+}
+
+function posts_update(PDO $pdo, int $id, string $title, string $body, string $status, ?string $publishedAt): void
+{
+    $stmt = $pdo->prepare(
+        'UPDATE posts
+         SET title = :title,
+             body = :body,
+             status = :status,
+             published_at = :published_at
+         WHERE id = :id'
+    );
+    $stmt->execute([
+        'id' => $id,
+        'title' => $title,
+        'body' => $body,
+        'status' => $status,
+        'published_at' => $publishedAt,
+    ]);
+}
+
 function posts_count_published(PDO $pdo): int
 {
     $stmt = $pdo->query("SELECT COUNT(*) FROM posts WHERE status = 'published'");

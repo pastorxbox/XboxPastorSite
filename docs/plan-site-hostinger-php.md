@@ -16,7 +16,7 @@ todos:
     status: completed
   - id: fase-5
     content: "Fase 5 — API POST endurecida: Bearer, HTMLPurifier, media GD, sem painel"
-    status: pending
+    status: completed
   - id: fase-6
     content: "Fase 6 — Xbox Manager → localhost: adaptador Site, publicar e republicar"
     status: pending

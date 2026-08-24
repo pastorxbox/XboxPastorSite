@@ -6,7 +6,8 @@
 services:
   web:
     build:
-      context: ./docker/php
+      context: .
+      dockerfile: docker/php/Dockerfile
     ports:
       - "8080:80"
     env_file:

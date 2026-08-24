@@ -1,5 +1,6 @@
 .env
 mysql-data/
+/vendor/
 public/uploads/*
 !public/uploads/.gitkeep
 !public/uploads/.htaccess
