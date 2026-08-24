@@ -16,6 +16,8 @@ services:
     volumes:
       - ./public:/var/www/html
       - ./config:/var/www/config:ro
+      - ./tools:/var/www/tools:ro
+      - ./sql:/var/www/sql:ro
     depends_on:
       mysql:
         condition: service_healthy
@@ -32,6 +34,7 @@ services:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     volumes:
       - mysql_data:/var/lib/mysql
+      - ./sql:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p${MYSQL_ROOT_PASSWORD}"]
       interval: 5s

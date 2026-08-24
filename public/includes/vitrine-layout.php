@@ -3,16 +3,33 @@
 declare(strict_types=1);
 
 /**
- * Layout da vitrine (Fase 2). Reutilizado nas páginas públicas.
+ * Layout da vitrine (Fase 2+). Reutilizado nas páginas públicas.
+ *
+ * @param array{
+ *   canonical?: string,
+ *   og_title?: string,
+ *   og_description?: string,
+ *   og_type?: string,
+ *   og_url?: string,
+ * } $meta
  */
-function render_vitrine_page(array $config, string $pageTitle, string $mainHtml): void
+function render_vitrine_page(array $config, string $pageTitle, string $mainHtml, array $meta = [], int $statusCode = 200): void
 {
+    if ($statusCode !== 200) {
+        http_response_code($statusCode);
+    }
+
     $siteName = htmlspecialchars((string) ($config['site_name'] ?? 'Pastor Xbox'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
     $title = htmlspecialchars($pageTitle, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
     $xScreenName = preg_replace('/[^A-Za-z0-9_]/', '', (string) ($config['x_screen_name'] ?? 'PastorXbox')) ?: 'PastorXbox';
     $xProfileUrl = 'https://x.com/' . rawurlencode($xScreenName);
     $gaMeasurementId = trim((string) ($config['ga_measurement_id'] ?? ''));
-    $assetVersion = '20260824';
+    $assetVersion = '20260824f3';
+    $canonical = isset($meta['canonical']) ? htmlspecialchars((string) $meta['canonical'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') : '';
+    $ogTitle = isset($meta['og_title']) ? htmlspecialchars((string) $meta['og_title'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') : $title;
+    $ogDescription = isset($meta['og_description']) ? htmlspecialchars((string) $meta['og_description'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') : '';
+    $ogType = isset($meta['og_type']) ? htmlspecialchars((string) $meta['og_type'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') : 'website';
+    $ogUrl = isset($meta['og_url']) ? htmlspecialchars((string) $meta['og_url'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') : $canonical;
 
     header('Content-Type: text/html; charset=utf-8');
     header('X-Content-Type-Options: nosniff');
@@ -25,6 +42,18 @@ function render_vitrine_page(array $config, string $pageTitle, string $mainHtml)
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= $title ?> — <?= $siteName ?></title>
+    <?php if ($canonical !== ''): ?>
+    <link rel="canonical" href="<?= $canonical ?>">
+    <?php endif; ?>
+    <meta property="og:site_name" content="<?= $siteName ?>">
+    <meta property="og:title" content="<?= $ogTitle ?>">
+    <?php if ($ogDescription !== ''): ?>
+    <meta property="og:description" content="<?= $ogDescription ?>">
+    <?php endif; ?>
+    <meta property="og:type" content="<?= $ogType ?>">
+    <?php if ($ogUrl !== ''): ?>
+    <meta property="og:url" content="<?= $ogUrl ?>">
+    <?php endif; ?>
     <link rel="stylesheet" href="/assets/css/vitrine.css?v=<?= $assetVersion ?>">
 </head>
 <body data-ga-id="<?= htmlspecialchars($gaMeasurementId, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>">
