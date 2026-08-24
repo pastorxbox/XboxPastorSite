@@ -1,6 +1,6 @@
 ---
 name: Site Hostinger PHP
-overview: Site PHP 8 + MySQL sem painel, 8 fases testáveis. Import WP preserva ?p=ID. Publicação só pelo Xbox Manager via API. Cutover na Hostinger só na fase 8.
+overview: Site PHP 8 + MySQL sem painel, 8 fases testáveis. Fases 1–5 concluídas no repo; RSS antecipado. Fase 6 no Xbox Manager. Cutover Hostinger só na fase 8.
 todos:
   - id: fase-1
     content: "Fase 1 — Docker local PHP+MySQL: compose up, config fora da web, homepage mínima"
@@ -18,10 +18,13 @@ todos:
     content: "Fase 5 — API POST endurecida: Bearer, HTMLPurifier, media GD, sem painel"
     status: completed
   - id: fase-6
-    content: "Fase 6 — Xbox Manager → localhost: adaptador Site, publicar e republicar"
+    content: "Fase 6 — Xbox Manager → localhost: adaptador Site, publicar e republicar (repo Manager)"
     status: pending
+  - id: fase-7-rss
+    content: "Fase 7 (parcial) — Feed RSS /rss.xml com links /?p={id} e autodiscovery no layout"
+    status: completed
   - id: fase-7
-    content: "Fase 7 — Cache/SEO/.htaccess: sitemap, RSS, ETag, uploads sem PHP, QA local completo"
+    content: "Fase 7 — Restante: sitemap.xml, Cache-Control/ETag HTML, bloquear tools/, QA local"
     status: pending
   - id: fase-8
     content: "Fase 8 — Cutover Hostinger: backup+rollback, WAF/Cache CF, swap, post novo no domínio"
@@ -99,6 +102,26 @@ O canal `WORDPRESS` no Prisma **mantém-se** (evita migração de enum). Troca-s
 
 Regras que valem em todas as fases: PHP 8 + MySQL; sem Next.js na Hostinger; URLs `/?p={id}`; WordPress de produção intacto até a fase 8.
 
+## Estado actual (repo `XboxPastorSite`)
+
+| Entrega | Estado | Notas |
+| --- | --- | --- |
+| Fases 1–5 | Concluídas | Docker, vitrine, conteúdo, import WP, API POST |
+| Feed RSS | Concluído | `/rss.xml` — 50 últimas notícias, links `/?p={id}` |
+| Fase 6 | Pendente | Repositório **Xbox Manager** (VM Oracle), não este repo |
+| Fase 7 (resto) | Pendente | `sitemap.xml`, ETag/cache HTML, QA final |
+| Fase 8 | Pendente | Cutover Hostinger + Cloudflare |
+
+### Comandos locais úteis
+
+```bash
+docker compose up --build -d
+docker compose exec web php /var/www/tools/init-db.php
+docker compose exec web php /var/www/tools/import-wordpress.php
+```
+
+URLs de teste: `http://localhost:8080/` · `/?p=1194` · `/health` · `/rss.xml`
+
 ## 8 fases (uma de cada vez)
 
 Não avançar de fase sem o teste no fim passar. Fases 1–7 são locais. A fase 8 é a única que mexe na Hostinger.
@@ -133,7 +156,11 @@ Não avançar de fase sem o teste no fim passar. Fases 1–7 são locais. A fase
 
 **Teste (curl):** sem token → 401; com token → cria post e devolve `url` `http://localhost:8080/?p={id}` com id **maior** que o acervo WP; republicar o mesmo id actualiza; ficheiro `.php` em media é rejeitado; abrir `/api/` no browser não é um painel.
 
+**Implementado em:** `public/api/`, `public/includes/api-*.php`, `composer.json` (HTMLPurifier), GD no Dockerfile.
+
 ### Fase 6 — Xbox Manager aponta para o local
+
+**Repo:** `Xbox Manager` (Next.js na VM Oracle) — **não** está neste repositório PHP.
 
 **Faz:** Adaptador `[src/lib/pastor-site.ts](c:\Projetos\Xbox Manager\src\lib\pastor-site.ts)` no lugar de `publishToWordPress`. Env de **dev**: `SITE_BASE_URL=http://localhost:8080` + `SITE_API_KEY`. UI: rótulo “WordPress” → “Site” (enum Prisma inalterado). Ping `/health` antes de publicar. Produção do Manager e o WordPress **não** mudam.
 
@@ -141,9 +168,11 @@ Não avançar de fase sem o teste no fim passar. Fases 1–7 são locais. A fase
 
 ### Fase 7 — Cache, SEO e QA local fechado
 
-**Faz:** `Cache-Control`/`ETag` nas páginas HTML; `/api/` e `/health` sem cache. `sitemap.xml` e `rss.xml` com `/?p={id}`. `.htaccess`: bloquear `tools/` e config; `uploads/` sem PHP. Purge Cloudflare é no-op em local (só log). Checklist escrito para LiteSpeed vs Apache. Documentar rollback da fase 8. Não sobe nada à Hostinger.
+**Faz (pendente):** `Cache-Control`/`ETag` nas páginas HTML; `/api/` e `/health` sem cache. `sitemap.xml` com `/?p={id}`. `.htaccess`: bloquear `tools/` e config; `uploads/` sem PHP (já parcial). Purge Cloudflare é no-op em local (só log). Checklist escrito para LiteSpeed vs Apache. Documentar rollback da fase 8. Não sobe nada à Hostinger.
 
-**Teste:** Sitemap lista ids reais (incluindo 1194). RSS abre. Headers de cache no HTML. QA: home, artigo importado, artigo novo da fase 6, 404, health, API sem token. Se algo falhar, não há fase 8.
+**Já feito (antecipado):** feed **`/rss.xml`** — RSS 2.0, 50 últimas notícias publicadas, links `/?p={id}`, corpo HTML em CDATA, `<link rel="alternate">` no layout. Ficheiros: `public/rss.php`, `public/includes/feed.php`.
+
+**Teste:** Sitemap lista ids reais (incluindo 1194). RSS abre (`/rss.xml`). Headers de cache no HTML. QA: home, artigo importado, artigo novo da API, 404, health, API sem token. Se algo falhar, não há fase 8.
 
 ### Fase 8 — Cutover na Hostinger
 
