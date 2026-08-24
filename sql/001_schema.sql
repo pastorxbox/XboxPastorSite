@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS posts (
-    id INT UNSIGNED NOT NULL,
+    id INT UNSIGNED NOT NULL AUTO_INCREMENT,
     title VARCHAR(500) NOT NULL,
     body MEDIUMTEXT NOT NULL,
     status ENUM('draft', 'published') NOT NULL DEFAULT 'draft',

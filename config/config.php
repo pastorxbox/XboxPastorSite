@@ -19,4 +19,5 @@ return [
     'site_api_key' => getenv('SITE_API_KEY') ?: '',
     'ga_measurement_id' => getenv('GA_MEASUREMENT_ID') ?: '',
     'x_screen_name' => getenv('X_SCREEN_NAME') ?: 'PastorXbox',
+    'wp_rest_base_url' => getenv('WP_REST_BASE_URL') ?: 'https://pastorxbox.com.br/wp-json/wp/v2',
 ];

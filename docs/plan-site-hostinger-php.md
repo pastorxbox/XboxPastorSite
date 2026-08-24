@@ -13,7 +13,7 @@ todos:
     status: completed
   - id: fase-4
     content: "Fase 4 — Import WP via REST: mesmo id, imagens locais, confirmar /?p=1194"
-    status: pending
+    status: completed
   - id: fase-5
     content: "Fase 5 — API POST endurecida: Bearer, HTMLPurifier, media GD, sem painel"
     status: pending

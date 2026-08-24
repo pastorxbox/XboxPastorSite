@@ -429,6 +429,27 @@ a:hover {
     font-size: 0.95em;
 }
 
+.article__featured {
+    margin: 0 0 1.25rem;
+}
+
+.article__featured img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 0.5rem;
+}
+
+.article__body img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 0.35rem;
+}
+
+.article__body figure {
+    margin: 0 0 1rem;
+}
+
 .error-page {
     background: var(--surface);
     border: 1px solid var(--border);
