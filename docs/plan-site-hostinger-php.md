@@ -18,7 +18,7 @@ todos:
     content: "Fase 5 — API POST endurecida: Bearer, HTMLPurifier, media GD, sem painel"
     status: completed
   - id: fase-6
-    content: "Fase 6 — Xbox Manager → localhost: adaptador Site, publicar e republicar (repo Manager)"
+    content: "Fase 6 — Xbox Manager: botão Site + botão WordPress em paralelo (repo Manager); WP só remove pós-cutover"
     status: pending
   - id: fase-7-rss
     content: "Fase 7 (parcial) — Feed RSS /rss.xml com links /?p={id} e autodiscovery no layout"
@@ -96,7 +96,7 @@ flowchart LR
   Visitante --> PHP
 ```
 
-O canal `WORDPRESS` no Prisma **mantém-se** (evita migração de enum). Troca-se só o adaptador HTTP e, na UI, o rótulo “WordPress” por “Site”. O fluxo actual permanece: rascunho → publicar no site → só depois Telegram/X/Bluesky. Campos `wpPostId` / `wpPostUrl` / `canonicalWpBody` continuam a guardar o id e o URL públicos.
+O canal `WORDPRESS` no Prisma **mantém-se** (evita migração de enum). Na Fase 6 **não se remove** o botão WordPress: a UI fica com **dois botões em paralelo** — “WordPress” (fluxo actual) e “Site” (novo adaptador PHP). O botão WordPress só se remove **depois** do cutover na Hostinger (pós-Fase 8), quando o site novo estiver validado em produção. Campos `wpPostId` / `wpPostUrl` / `canonicalWpBody` continuam a guardar o id e o URL públicos (reutilizados também pelo canal Site).
 
 **O site PHP não tem gerenciador.** Sem login, sem `/admin`, sem utilizadores, sem formulário de publicação. A única escrita é a API chamada pelo Xbox Manager. phpMyAdmin no Docker é só local; na Hostinger não se instala nenhum painel.
 
@@ -158,13 +158,31 @@ Não avançar de fase sem o teste no fim passar. Fases 1–7 são locais. A fase
 
 **Implementado em:** `public/api/`, `public/includes/api-*.php`, `composer.json` (HTMLPurifier), GD no Dockerfile.
 
-### Fase 6 — Xbox Manager aponta para o local
+### Fase 6 — Xbox Manager: WordPress + Site em paralelo
 
 **Repo:** `Xbox Manager` (Next.js na VM Oracle) — **não** está neste repositório PHP.
 
-**Faz:** Adaptador `[src/lib/pastor-site.ts](c:\Projetos\Xbox Manager\src\lib\pastor-site.ts)` no lugar de `publishToWordPress`. Env de **dev**: `SITE_BASE_URL=http://localhost:8080` + `SITE_API_KEY`. UI: rótulo “WordPress” → “Site” (enum Prisma inalterado). Ping `/health` antes de publicar. Produção do Manager e o WordPress **não** mudam.
+**Decisão de UI (confirmada):** manter **dois botões** até o cutover estar estável:
 
-**Teste:** No painel local do Manager, publicar um artigo novo → aparece no Docker com `/?p=` novo. Republicar um que já tem `wpPostId` (id importado) actualiza o mesmo `/?p=` sem criar outro.
+| Botão | Comportamento |
+| --- | --- |
+| **WordPress** | Fluxo actual (`publishToWordPress` / REST WP) — **não alterar** |
+| **Site** | Novo adaptador → API PHP (`SITE_BASE_URL` + `SITE_API_KEY`) |
+
+Só **depois** de testar localmente **e** publicar o site na Hostinger (Fase 8 validada) é que se remove o botão WordPress.
+
+**Faz:**
+- Novo ficheiro `[src/lib/pastor-site.ts](c:\Projetos\Xbox Manager\src\lib\pastor-site.ts)` — `publishToSite` / `updateSitePost` (não substitui `wordpress.ts`)
+- Env de **dev**: `SITE_BASE_URL=http://localhost:8080` + `SITE_API_KEY`
+- UI: botão **Site** ao lado do botão **WordPress** (não substituir o rótulo)
+- Enum Prisma inalterado; canal `WORDPRESS` continua; Site pode reutilizar `wpPostId` / `wpPostUrl` ou campos equivalentes
+- Ping `/health` antes de publicar no Site
+- Produção do Manager e o WordPress **não** mudam nesta fase
+
+**Teste:**
+1. Botão **WordPress** continua a publicar no WP de produção (sem regressão)
+2. Botão **Site** → artigo novo aparece no Docker em `/?p=` novo
+3. Republicar pelo Site um post que já tem `wpPostId` (id importado) actualiza o mesmo `/?p=` sem criar outro
 
 ### Fase 7 — Cache, SEO e QA local fechado
 
@@ -178,9 +196,11 @@ Não avançar de fase sem o teste no fim passar. Fases 1–7 são locais. A fase
 
 Única fase que toca produção. Premium **não tem staging**.
 
-**Faz:** Backup zip de `public_html` (inclui `wp-content/uploads`) + dump MySQL WP, **fora** da web. MySQL nova (não `wp_*`). Validar `.htaccess` no LiteSpeed. Cloudflare: SSL Full, WAF `/api/*` só IP da VM Oracle, Cache Rules (HTML sim; `/api/` e `/health` não), rate limit `/api/`. Swap para o PHP + uploads + dump já validados. Apontar Manager de **produção** para a API nova. Purge CF após POST.
+**Faz:** Backup zip de `public_html` (inclui `wp-content/uploads`) + dump MySQL WP, **fora** da web. MySQL nova (não `wp_*`). Validar `.htaccess` no LiteSpeed. Cloudflare: SSL Full, WAF `/api/*` só IP da VM Oracle, Cache Rules (HTML sim; `/api/` e `/health` não), rate limit `/api/`. Swap para o PHP + uploads + dump já validados. Apontar Manager de **produção** para a API nova (`SITE_BASE_URL` = domínio público). Purge CF após POST. **Ainda manter** o botão WordPress no Manager até a QA em produção fechar.
 
-**Teste:** `https://pastorxbox.com.br/?p=1194` igual ao local. `/health` ok. `/api/` sem Bearer ou de IP estranho falha. Post novo pelo Manager: id > acervo, home actualiza. Rollback: restaurar o zip WP em minutos se precisar.
+**Teste:** `https://pastorxbox.com.br/?p=1194` igual ao local. `/health` ok. `/api/` sem Bearer ou de IP estranho falha. Post novo pelo Manager (botão Site): id > acervo, home actualiza. Rollback: restaurar o zip WP em minutos se precisar.
+
+**Pós-Fase 8 (cleanup no Manager):** só então remover o botão WordPress e o adaptador WP, quando o Site na Hostinger estiver estável.
 
 ## Fora de escopo
 
