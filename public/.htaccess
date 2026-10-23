@@ -1,12 +1,57 @@
 DirectoryIndex index.php
 Options -Indexes
 
+<IfModule mod_mime.c>
+    AddType image/avif .avif
+    AddType image/webp .webp
+</IfModule>
+
 <IfModule mod_rewrite.c>
     RewriteEngine On
     RewriteRule ^health/?$ health.php [L]
     RewriteRule ^rss\.xml$ rss.php [L]
+    RewriteRule ^calendario/rss\.xml$ rss-calendar.php [L]
+    RewriteRule ^noticias/?$ index.php?secao=noticias [L,QSA]
+    RewriteRule ^artigos/?$ index.php?secao=artigos [L,QSA]
+    RewriteRule ^calendario/?$ index.php?secao=calendario [L,QSA]
+    RewriteRule ^busca/?$ index.php?secao=busca [L,QSA]
+    RewriteRule ^tag/([A-Za-z0-9_-]+)/?$ index.php?tag=$1 [L,QSA]
     RewriteRule ^api/?$ api/index.php [L]
     RewriteRule ^api/posts/?$ api/index.php [L]
+    RewriteRule ^api/posts/([0-9]+)/translations/(en|es)/?$ api/index.php [L]
     RewriteRule ^api/posts/([0-9]+)/?$ api/index.php [L]
+    RewriteRule ^api/settings/i18n/?$ api/index.php [L]
+    RewriteRule ^api/settings/brand/?$ api/index.php [L]
+    RewriteRule ^api/settings/home-today/?$ api/index.php [L]
     RewriteRule ^api/media/?$ api/index.php [L]
+    RewriteRule ^api/calendar/gamepass/?$ api/index.php [L]
+    RewriteRule ^api/calendar/gamepass/([0-9]+)/translations/(en|es)/?$ api/index.php [L]
+    RewriteRule ^api/calendar/gamepass/([0-9]+)/?$ api/index.php [L]
+    RewriteRule ^api/calendar/events/?$ api/index.php [L]
+    RewriteRule ^api/calendar/events/([0-9]+)/translations/(en|es)/?$ api/index.php [L]
+    RewriteRule ^api/calendar/events/([0-9]+)/?$ api/index.php [L]
+    RewriteRule ^api/calendar/history/?$ api/index.php [L]
+    RewriteRule ^api/calendar/history/([0-9]+)/translations/(en|es)/?$ api/index.php [L]
+    RewriteRule ^api/calendar/history/([0-9]+)/?$ api/index.php [L]
+    RewriteRule ^api/ads/?$ api/index.php [L]
+    RewriteRule ^api/ads/slots/([A-Za-z0-9_]+)/?$ api/index.php [L]
+    RewriteRule ^api/ads/slots/([A-Za-z0-9_]+)/slides/?$ api/index.php [L]
+    RewriteRule ^api/ads/slides/([0-9]+)/?$ api/index.php [L]
+    RewriteRule ^api/tvxbox/?$ api/index.php [L]
+    RewriteRule ^api/tvxbox/link/?$ api/index.php [L]
+    RewriteRule ^api/tvxbox/([0-9]+)/translations/(en|es)/?$ api/index.php [L]
+    RewriteRule ^api/tvxbox/([0-9]+)/?$ api/index.php [L]
+    RewriteRule ^api/push/vapid-public-key/?$ api/index.php [L]
+    RewriteRule ^api/push/subscribe/?$ api/index.php [L]
+</IfModule>
+
+<IfModule mod_mime.c>
+    AddType application/manifest+json .webmanifest
+    AddType text/javascript .js
+</IfModule>
+
+<IfModule mod_headers.c>
+    <FilesMatch "^(sw\.js|manifest\.webmanifest)$">
+        Header set Cache-Control "no-cache"
+    </FilesMatch>
 </IfModule>

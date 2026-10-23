@@ -1,0 +1,32 @@
+{
+  "name": "Pastor Xbox",
+  "short_name": "PastorXbox",
+  "description": "Xbox, Games & Propósito — notícias e calendário",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0c1015",
+  "theme_color": "#107c10",
+  "lang": "pt-BR",
+  "icons": [
+    {
+      "src": "/assets/img/pwa-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/img/pwa-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/img/pwa-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

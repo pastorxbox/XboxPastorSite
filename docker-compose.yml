@@ -9,7 +9,7 @@ services:
       context: .
       dockerfile: docker/php/Dockerfile
     ports:
-      - "8080:80"
+      - "0.0.0.0:8080:80"
     env_file:
       - .env
     environment:
@@ -33,9 +33,13 @@ services:
       MYSQL_USER: ${DB_USER}
       MYSQL_PASSWORD: ${DB_PASSWORD}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
     volumes:
       - mysql_data:/var/lib/mysql
       - ./sql:/docker-entrypoint-initdb.d:ro
+      - ./docker/mysql/utf8mb4.cnf:/etc/mysql/conf.d/utf8mb4.cnf:ro
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p${MYSQL_ROOT_PASSWORD}"]
       interval: 5s

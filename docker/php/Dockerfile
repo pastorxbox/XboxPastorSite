@@ -12,20 +12,23 @@ RUN apt-get update \
     && docker-php-ext-install pdo pdo_mysql gd \
     && a2enmod rewrite \
     && printf '%s\n' \
+        'AddDefaultCharset UTF-8' \
         '<Directory /var/www/html>' \
         '    Options -Indexes +FollowSymLinks' \
         '    AllowOverride All' \
         '    Require all granted' \
         '</Directory>' \
         > /etc/apache2/conf-available/pastorxbox.conf \
-    && a2enconf pastorxbox
+    && a2enconf pastorxbox \
+    && printf '%s\n' 'default_charset = UTF-8' > /usr/local/etc/php/conf.d/charset.ini
 
 COPY composer.json composer.lock* /var/www/
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
     && cd /var/www && composer install --no-dev --no-interaction --prefer-dist --no-progress
 
 COPY docker/php/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+RUN sed -i 's/\r$//' /usr/local/bin/docker-entrypoint.sh \
+    && chmod +x /usr/local/bin/docker-entrypoint.sh
 
 WORKDIR /var/www/html
 

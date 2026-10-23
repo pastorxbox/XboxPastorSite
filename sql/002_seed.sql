@@ -1,3 +1,5 @@
+SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci;
+
 INSERT INTO posts (id, title, body, status, published_at)
 VALUES (
     1,

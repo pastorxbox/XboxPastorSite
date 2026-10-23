@@ -1,6 +1,14 @@
 .env
 mysql-data/
 /vendor/
+deploy/SITE_API_KEY.txt
+deploy/avatar-b64.txt
+deploy/run-ssh.sh
+deploy/hostinger_ssh.py
+# scripts com senha de banco hardcoded — não publicar
+deploy/run-import.py
+deploy/fix-dup-image.py
+deploy/verify.py
 public/uploads/*
 !public/uploads/.gitkeep
 !public/uploads/.htaccess

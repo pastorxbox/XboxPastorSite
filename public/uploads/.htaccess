@@ -1,5 +1,19 @@
 Options -Indexes
 
+<IfModule mod_mime.c>
+    AddType image/avif .avif avif
+    AddType image/webp .webp webp
+</IfModule>
+
+<IfModule mod_headers.c>
+    <FilesMatch "\.avif$">
+        Header set Content-Type "image/avif"
+    </FilesMatch>
+    <FilesMatch "\.webp$">
+        Header set Content-Type "image/webp"
+    </FilesMatch>
+</IfModule>
+
 <FilesMatch "\.php$">
     Require all denied
 </FilesMatch>

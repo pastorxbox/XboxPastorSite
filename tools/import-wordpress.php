@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 /**
  * Importa posts publicados do WordPress via REST (Fase 4).
- * Uso local: docker compose exec web php /var/www/tools/import-wordpress.php
+ * Uso local:
+ *   docker compose exec web php /var/www/tools/import-wordpress.php
+ *   docker compose exec web php /var/www/tools/import-wordpress.php 1216
  */
 $configFile = '/var/www/config/config.php';
 if (!is_file($configFile)) {
@@ -14,6 +16,7 @@ if (!is_file($configFile)) {
 
 $config = require $configFile;
 require '/var/www/html/includes/db.php';
+require '/var/www/html/includes/tags.php';
 require __DIR__ . '/lib/wp-import.php';
 
 $restBaseUrl = rtrim((string) ($config['wp_rest_base_url'] ?? 'https://pastorxbox.com.br/wp-json/wp/v2'), '/');
@@ -25,17 +28,34 @@ if (!is_dir($uploadsRoot) && !mkdir($uploadsRoot, 0755, true) && !is_dir($upload
 }
 
 $pdo = db_connect($config);
-$meta = wp_import_fetch_meta($restBaseUrl, 100);
 
-wp_import_log("WordPress: {$meta['total']} posts em {$meta['total_pages']} página(s).");
+$ids = [];
+foreach (array_slice($argv, 1) as $arg) {
+    if (ctype_digit((string) $arg) && (int) $arg > 0) {
+        $ids[] = (int) $arg;
+    }
+}
 
 $imported = 0;
-for ($page = 1; $page <= $meta['total_pages']; ++$page) {
-    wp_import_log("A importar página {$page}/{$meta['total_pages']}...");
-    $posts = wp_import_fetch_posts_page($restBaseUrl, $page, $meta['per_page']);
-    foreach ($posts as $post) {
+if ($ids !== []) {
+    foreach ($ids as $id) {
+        wp_import_log("A importar post {$id}...");
+        $post = wp_import_fetch_post_by_id($restBaseUrl, $id);
         wp_import_upsert_post($pdo, $post, $uploadsRoot, $siteHost);
         ++$imported;
+        wp_import_log('Importado: ' . wp_import_normalize_title((string) ($post['title']['rendered'] ?? '')));
+    }
+} else {
+    $meta = wp_import_fetch_meta($restBaseUrl, 100);
+    wp_import_log("WordPress: {$meta['total']} posts em {$meta['total_pages']} página(s).");
+
+    for ($page = 1; $page <= $meta['total_pages']; ++$page) {
+        wp_import_log("A importar página {$page}/{$meta['total_pages']}...");
+        $posts = wp_import_fetch_posts_page($restBaseUrl, $page, $meta['per_page']);
+        foreach ($posts as $post) {
+            wp_import_upsert_post($pdo, $post, $uploadsRoot, $siteHost);
+            ++$imported;
+        }
     }
 }
 

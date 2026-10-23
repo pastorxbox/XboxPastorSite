@@ -7,6 +7,7 @@ const API_ALLOWED_IMAGE_MIMES = [
     'image/png' => 'png',
     'image/gif' => 'gif',
     'image/webp' => 'webp',
+    'image/avif' => 'avif',
 ];
 
 function api_require_multipart_content_type(): void
@@ -40,6 +41,7 @@ function api_reencode_image(string $sourcePath, string $mime, string $destPath):
         'image/png' => @imagecreatefrompng($sourcePath),
         'image/gif' => @imagecreatefromgif($sourcePath),
         'image/webp' => function_exists('imagecreatefromwebp') ? @imagecreatefromwebp($sourcePath) : false,
+        'image/avif' => function_exists('imagecreatefromavif') ? @imagecreatefromavif($sourcePath) : false,
         default => false,
     };
 
@@ -52,6 +54,7 @@ function api_reencode_image(string $sourcePath, string $mime, string $destPath):
         'image/png' => imagepng($image, $destPath, 6),
         'image/gif' => imagegif($image, $destPath),
         'image/webp' => function_exists('imagewebp') ? imagewebp($image, $destPath, 85) : false,
+        'image/avif' => function_exists('imageavif') ? imageavif($image, $destPath, 70) : false,
         default => false,
     };
 
@@ -100,7 +103,18 @@ function api_store_uploaded_media(array $file, string $uploadsRoot): string
     $filename = bin2hex(random_bytes(16)) . '.' . $extension;
     $destPath = $destDir . '/' . $filename;
 
-    api_reencode_image($tmpPath, $mime, $destPath);
+    // GIF: copiar bytes originais para preservar animação (reencode GD achata frames).
+    // AVIF: copiar quando GD não tiver imagecreatefromavif/imageavif (comum em shared hosting).
+    $copyOriginal = $mime === 'image/gif'
+        || ($mime === 'image/avif' && (!function_exists('imagecreatefromavif') || !function_exists('imageavif')));
+
+    if ($copyOriginal) {
+        if (!move_uploaded_file($tmpPath, $destPath) && !copy($tmpPath, $destPath)) {
+            api_error(500, 'Failed to store image');
+        }
+    } else {
+        api_reencode_image($tmpPath, $mime, $destPath);
+    }
 
     return '/uploads/' . $subdir . '/' . $filename;
 }

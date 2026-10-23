@@ -98,12 +98,27 @@ function wp_import_fetch_posts_page(string $restBaseUrl, int $page, int $perPage
     return $posts;
 }
 
+/**
+ * @return array<string, mixed>
+ */
+function wp_import_fetch_post_by_id(string $restBaseUrl, int $id): array
+{
+    $url = rtrim($restBaseUrl, '/') . '/posts/' . $id . '?_embed=1';
+    $json = wp_import_http_get($url);
+    $post = json_decode($json, true);
+    if (!is_array($post) || (int) ($post['id'] ?? 0) !== $id) {
+        wp_import_fail("Post {$id} não encontrado na API WordPress.");
+    }
+
+    return $post;
+}
+
 function wp_import_normalize_title(string $renderedTitle): string
 {
     $title = html_entity_decode(strip_tags($renderedTitle), ENT_QUOTES | ENT_HTML5, 'UTF-8');
     $title = trim(preg_replace('/\s+/u', ' ', $title) ?? '');
 
-    return mb_substr($title, 0, 500);
+    return function_exists('mb_substr') ? mb_substr($title, 0, 500) : substr($title, 0, 500);
 }
 
 function wp_import_parse_date(string $isoDate): ?string
@@ -321,6 +336,18 @@ function wp_import_prepend_featured(string $body, ?array $featured, string $uplo
     return $figure . "\n" . $body;
 }
 
+function wp_import_section(array $post): string
+{
+    $categories = $post['categories'] ?? [];
+    foreach ([12, 1] as $articleCategoryId) {
+        if (in_array($articleCategoryId, $categories, true) || in_array((string) $articleCategoryId, $categories, true)) {
+            return 'article';
+        }
+    }
+
+    return 'news';
+}
+
 function wp_import_upsert_post(PDO $pdo, array $post, string $uploadsRoot, string $siteHost): void
 {
     $id = (int) ($post['id'] ?? 0);
@@ -333,14 +360,16 @@ function wp_import_upsert_post(PDO $pdo, array $post, string $uploadsRoot, strin
     $body = wp_import_process_body_images($body, $uploadsRoot, $siteHost);
     $body = wp_import_prepend_featured($body, wp_import_featured_media($post), $uploadsRoot, $siteHost);
     $publishedAt = wp_import_parse_date((string) ($post['date'] ?? ''));
+    $section = wp_import_section($post);
 
     $stmt = $pdo->prepare(
-        'INSERT INTO posts (id, title, body, status, published_at)
-         VALUES (:id, :title, :body, :status, :published_at)
+        'INSERT INTO posts (id, title, body, status, section, published_at)
+         VALUES (:id, :title, :body, :status, :section, :published_at)
          ON DUPLICATE KEY UPDATE
             title = VALUES(title),
             body = VALUES(body),
             status = VALUES(status),
+            section = VALUES(section),
             published_at = VALUES(published_at)'
     );
     $stmt->execute([
@@ -348,8 +377,11 @@ function wp_import_upsert_post(PDO $pdo, array $post, string $uploadsRoot, strin
         'title' => $title,
         'body' => $body,
         'status' => 'published',
+        'section' => $section,
         'published_at' => $publishedAt,
     ]);
+
+    tags_sync_for_post($pdo, $id, tags_infer_from_text($title, $body));
 }
 
 function wp_import_fix_auto_increment(PDO $pdo): void

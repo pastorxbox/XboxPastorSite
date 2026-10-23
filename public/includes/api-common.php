@@ -26,6 +26,14 @@ function api_require_post(): void
     }
 }
 
+function api_require_method(string $method): void
+{
+    $current = strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'));
+    if ($current !== strtoupper($method)) {
+        api_error(405, 'Method not allowed');
+    }
+}
+
 function api_is_local_request(array $config): bool
 {
     $base = (string) ($config['site_base_url'] ?? '');
@@ -160,6 +168,50 @@ function api_normalize_title(string $title): string
     }
 
     return $title;
+}
+
+function api_normalize_section(mixed $value): string
+{
+    if ($value === null || $value === '') {
+        return 'news';
+    }
+    if (!is_string($value)) {
+        api_error(400, 'Invalid section');
+    }
+
+    $section = section_normalize($value);
+    if (!in_array($section, POST_SECTIONS, true)) {
+        api_error(400, 'Invalid section');
+    }
+
+    return $section;
+}
+
+/**
+ * @return list<string>
+ */
+function api_normalize_tags(mixed $value, string $title, string $body): array
+{
+    if ($value === null || $value === '') {
+        return tags_infer_from_text($title, $body);
+    }
+
+    if (is_string($value)) {
+        $value = preg_split('/[\s,]+/', $value) ?: [];
+    }
+
+    if (!is_array($value)) {
+        api_error(400, 'Invalid tags');
+    }
+
+    $raw = [];
+    foreach ($value as $item) {
+        if (is_string($item) && trim($item) !== '') {
+            $raw[] = $item;
+        }
+    }
+
+    return $raw !== [] ? $raw : tags_infer_from_text($title, $body);
 }
 
 function api_normalize_status(string $status): string

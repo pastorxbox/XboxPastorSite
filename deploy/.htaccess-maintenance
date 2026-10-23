@@ -1,0 +1,27 @@
+# Página de manutenção — redireciona todo o tráfego para maintenance.html
+# Exceto: a própria página, assets (CSS/JS/imagens) e o health check.
+
+DirectoryIndex maintenance.html
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Permitir acesso direto à página de manutenção
+    RewriteRule ^maintenance\.html$ - [L]
+
+    # Permitir assets (imagens, CSS, JS, fontes)
+    RewriteRule ^assets/ - [L]
+
+    # Permitir a imagem do avatar (usada na página)
+    RewriteRule ^assets/img/pastorxbox-avatar\.png$ - [L]
+
+    # Permitir health check (monitoramento)
+    RewriteRule ^health/?$ health.php [L]
+
+    # Tudo o resto → manutenção (503)
+    RewriteRule ^.*$ maintenance.html [R=503,L]
+</IfModule>
+
+# Enviar código 503 (Service Unavailable) com Retry-After
+ErrorDocument 503 /maintenance.html
+Header always set Retry-After "3600"

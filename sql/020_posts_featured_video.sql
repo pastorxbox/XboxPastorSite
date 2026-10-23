@@ -1,0 +1,2 @@
+ALTER TABLE posts
+    ADD COLUMN featured_video_url VARCHAR(500) NULL DEFAULT NULL AFTER body;
