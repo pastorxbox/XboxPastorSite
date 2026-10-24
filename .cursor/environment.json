@@ -1,0 +1,13 @@
+{
+  "name": "XboxPastorSite (PHP 8 + MySQL via Docker Compose)",
+  "user": "ubuntu",
+  "install": "./.cursor/install.sh",
+  "start": "./.cursor/start.sh",
+  "terminals": [
+    {
+      "name": "compose-logs",
+      "command": "./.cursor/logs.sh"
+    }
+  ],
+  "ports": [8080, 8081]
+}
