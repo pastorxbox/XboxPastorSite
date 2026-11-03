@@ -42,7 +42,7 @@ function render_vitrine_page(
     $xScreenName = preg_replace('/[^A-Za-z0-9_]/', '', (string) ($config['x_screen_name'] ?? 'PastorXbox')) ?: 'PastorXbox';
     $xProfileUrl = 'https://x.com/' . rawurlencode($xScreenName);
     $gaMeasurementId = trim((string) ($config['ga_measurement_id'] ?? ''));
-    $assetVersion = '20261103navhamburger1';
+    $assetVersion = '20261103navright2';
     $siteBase = rtrim((string) ($config['site_base_url'] ?? ''), '/');
     $vapidPublicKey = htmlspecialchars(trim((string) ($config['vapid_public_key'] ?? '')), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
     $pdo = $GLOBALS['pdo'] ?? null;
@@ -140,95 +140,80 @@ function render_vitrine_page(
                     <span><?= e(t('brand.tagline')) ?></span>
                 </div>
             </a>
-            <button
-                type="button"
-                class="nav-toggle"
-                data-nav-toggle
-                data-open-label="<?= e(t('ui.open_menu')) ?>"
-                data-close-label="<?= e(t('ui.close_menu')) ?>"
-                aria-expanded="false"
-                aria-controls="header-panel"
-            >
-                <span class="nav-toggle__icon nav-toggle__icon--open" aria-hidden="true"><?= nav_lucide_icon('menu', 22) ?></span>
-                <span class="nav-toggle__icon nav-toggle__icon--close" aria-hidden="true"><?= nav_lucide_icon('close', 22) ?></span>
-                <span class="visually-hidden" data-nav-toggle-label><?= e(t('ui.open_menu')) ?></span>
-            </button>
-            <div class="header-panel" id="header-panel" data-header-panel>
-                <form class="site-search" action="/busca" method="get" role="search" data-site-search>
-                    <?php if ($lang !== 'pt'): ?>
-                        <input type="hidden" name="lang" value="<?= e($lang) ?>">
-                    <?php endif; ?>
-                    <label class="visually-hidden" for="site-search-q"><?= e(t('ui.search')) ?></label>
-                    <button type="button" class="site-search__toggle" aria-expanded="false" aria-controls="site-search-panel">
-                        <?= nav_lucide_icon('search', 18) ?>
-                        <span class="visually-hidden"><?= e(t('ui.open_search')) ?></span>
+            <form class="site-search" action="/busca" method="get" role="search" data-site-search>
+                <?php if ($lang !== 'pt'): ?>
+                    <input type="hidden" name="lang" value="<?= e($lang) ?>">
+                <?php endif; ?>
+                <label class="visually-hidden" for="site-search-q"><?= e(t('ui.search')) ?></label>
+                <button type="button" class="site-search__toggle" aria-expanded="false" aria-controls="site-search-panel">
+                    <?= nav_lucide_icon('search', 18) ?>
+                    <span class="visually-hidden"><?= e(t('ui.open_search')) ?></span>
+                </button>
+                <div class="site-search__panel" id="site-search-panel">
+                    <span class="site-search__icon" aria-hidden="true"><?= nav_lucide_icon('search', 16) ?></span>
+                    <input id="site-search-q" class="site-search__input" type="search" name="q" placeholder="<?= e(t('ui.search_placeholder')) ?>" minlength="2" autocomplete="off" enterkeyhint="search">
+                    <button type="submit" class="site-search__submit">
+                        <?= nav_lucide_icon('search', 16) ?>
+                        <span class="visually-hidden"><?= e(t('ui.search')) ?></span>
                     </button>
-                    <div class="site-search__panel" id="site-search-panel">
-                        <span class="site-search__icon" aria-hidden="true"><?= nav_lucide_icon('search', 16) ?></span>
-                        <input id="site-search-q" class="site-search__input" type="search" name="q" placeholder="<?= e(t('ui.search_placeholder')) ?>" minlength="2" autocomplete="off" enterkeyhint="search">
-                        <button type="submit" class="site-search__submit">
-                            <?= nav_lucide_icon('search', 16) ?>
-                            <span class="visually-hidden"><?= e(t('ui.search')) ?></span>
-                        </button>
-                    </div>
-                </form>
-                <nav class="main-nav" aria-label="<?= e(t('ui.nav_main')) ?>">
-                    <a href="<?= e(site_home_url($config)) ?>" class="<?= $navHome ? 'active' : '' ?>" title="<?= e($homeLabel) ?>">
-                        <?= nav_lucide_icon('home') ?><span class="nav-label"><?= e($homeLabel) ?></span>
-                    </a>
-                    <a href="<?= e(site_section_url($config, 'news')) ?>" class="<?= $navNews ? 'active' : '' ?>" title="<?= e($newsLabel) ?>">
-                        <?= nav_lucide_icon('news') ?><span class="nav-label"><?= e($newsLabel) ?></span>
-                    </a>
-                    <a href="<?= e(site_section_url($config, 'article')) ?>" class="<?= $navArticles ? 'active' : '' ?>" title="<?= e($articlesLabel) ?>">
-                        <?= nav_lucide_icon('articles') ?><span class="nav-label"><?= e($articlesLabel) ?></span>
-                    </a>
-                    <a href="<?= e(site_list_url($config, 1, 'calendario', null)) ?>" class="<?= $navCalendar ? 'active' : '' ?>" title="<?= e($calendarLabel) ?>">
-                        <?= nav_lucide_icon('calendar') ?><span class="nav-label"><?= e($calendarLabel) ?></span>
-                    </a>
-                    <?php
-                    $currentLangOption = $langOptions[0];
-                    foreach ($langOptions as $option) {
-                        if ($option['code'] === $lang) {
-                            $currentLangOption = $option;
-                            break;
-                        }
-                    }
-                    ?>
-                    <div class="lang-switcher" data-lang-switcher>
-                        <button
-                            type="button"
-                            class="lang-switcher__toggle"
-                            aria-expanded="false"
-                            aria-haspopup="true"
-                            aria-controls="lang-switcher-menu"
-                            title="<?= e($currentLangOption['label']) ?>"
+                </div>
+            </form>
+            <nav class="main-nav" aria-label="<?= e(t('ui.nav_main')) ?>">
+                <a href="<?= e(site_home_url($config)) ?>" class="<?= $navHome ? 'active' : '' ?>" data-nav="home" title="<?= e($homeLabel) ?>">
+                    <?= nav_lucide_icon('home') ?><span class="nav-label"><?= e($homeLabel) ?></span>
+                </a>
+                <a href="<?= e(site_section_url($config, 'news')) ?>" class="<?= $navNews ? 'active' : '' ?>" data-nav="news" title="<?= e($newsLabel) ?>">
+                    <?= nav_lucide_icon('news') ?><span class="nav-label"><?= e($newsLabel) ?></span>
+                </a>
+                <a href="<?= e(site_section_url($config, 'article')) ?>" class="<?= $navArticles ? 'active' : '' ?>" data-nav="articles" title="<?= e($articlesLabel) ?>">
+                    <?= nav_lucide_icon('articles') ?><span class="nav-label"><?= e($articlesLabel) ?></span>
+                </a>
+                <a href="<?= e(site_list_url($config, 1, 'calendario', null)) ?>" class="<?= $navCalendar ? 'active' : '' ?>" data-nav="calendar" title="<?= e($calendarLabel) ?>">
+                    <?= nav_lucide_icon('calendar') ?><span class="nav-label"><?= e($calendarLabel) ?></span>
+                </a>
+            </nav>
+            <?php
+            $currentLangOption = $langOptions[0];
+            foreach ($langOptions as $option) {
+                if ($option['code'] === $lang) {
+                    $currentLangOption = $option;
+                    break;
+                }
+            }
+            ?>
+            <div class="lang-switcher" data-lang-switcher>
+                <button
+                    type="button"
+                    class="lang-switcher__toggle"
+                    aria-expanded="false"
+                    aria-haspopup="true"
+                    aria-controls="lang-switcher-menu"
+                    title="<?= e($currentLangOption['label']) ?>"
+                >
+                    <span class="lang-switcher__current" aria-hidden="true"><?= $currentLangOption['flag'] ?></span>
+                    <span class="visually-hidden"><?= e($currentLangOption['label']) ?></span>
+                </button>
+                <div class="lang-switcher__menu" id="lang-switcher-menu" role="menu" hidden>
+                    <?php foreach ($langOptions as $option): ?>
+                        <?php
+                        $query = $_GET;
+                        $query['lang'] = $option['code'];
+                        $href = $currentPath . '?' . http_build_query($query);
+                        $isCurrent = $lang === $option['code'];
+                        ?>
+                        <a
+                            href="<?= e($href) ?>"
+                            class="lang-switcher__option<?= $isCurrent ? ' is-active' : '' ?>"
+                            role="menuitem"
+                            hreflang="<?= e($option['code']) ?>"
+                            lang="<?= e($option['code']) ?>"
+                            <?= $isCurrent ? 'aria-current="true"' : '' ?>
                         >
-                            <span class="lang-switcher__current" aria-hidden="true"><?= $currentLangOption['flag'] ?></span>
-                            <span class="visually-hidden"><?= e($currentLangOption['label']) ?></span>
-                        </button>
-                        <div class="lang-switcher__menu" id="lang-switcher-menu" role="menu" hidden>
-                            <?php foreach ($langOptions as $option): ?>
-                                <?php
-                                $query = $_GET;
-                                $query['lang'] = $option['code'];
-                                $href = $currentPath . '?' . http_build_query($query);
-                                $isCurrent = $lang === $option['code'];
-                                ?>
-                                <a
-                                    href="<?= e($href) ?>"
-                                    class="lang-switcher__option<?= $isCurrent ? ' is-active' : '' ?>"
-                                    role="menuitem"
-                                    hreflang="<?= e($option['code']) ?>"
-                                    lang="<?= e($option['code']) ?>"
-                                    <?= $isCurrent ? 'aria-current="true"' : '' ?>
-                                >
-                                    <span class="lang-switcher__option-flag" aria-hidden="true"><?= $option['flag'] ?></span>
-                                    <span class="lang-switcher__option-label"><?= e($option['label']) ?></span>
-                                </a>
-                            <?php endforeach; ?>
-                        </div>
-                    </div>
-                </nav>
+                            <span class="lang-switcher__option-flag" aria-hidden="true"><?= $option['flag'] ?></span>
+                            <span class="lang-switcher__option-label"><?= e($option['label']) ?></span>
+                        </a>
+                    <?php endforeach; ?>
+                </div>
             </div>
         </div>
     </header>

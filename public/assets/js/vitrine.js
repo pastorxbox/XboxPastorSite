@@ -45,62 +45,6 @@
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
 
-    (function initMobileNav() {
-        if (!header) {
-            return;
-        }
-        var toggle = header.querySelector('[data-nav-toggle]');
-        var panel = header.querySelector('[data-header-panel]');
-        var label = header.querySelector('[data-nav-toggle-label]');
-        if (!toggle || !panel) {
-            return;
-        }
-
-        var openLabel = toggle.getAttribute('data-open-label') || (label ? label.textContent : 'Abrir menu');
-        var closeLabel = toggle.getAttribute('data-close-label') || 'Fechar menu';
-
-        function isOpen() {
-            return header.classList.contains('is-nav-open');
-        }
-
-        function setOpen(next) {
-            header.classList.toggle('is-nav-open', next);
-            toggle.setAttribute('aria-expanded', next ? 'true' : 'false');
-            document.body.classList.toggle('nav-open', next);
-            if (label) {
-                label.textContent = next ? closeLabel : openLabel;
-            }
-        }
-
-        toggle.addEventListener('click', function (event) {
-            event.preventDefault();
-            event.stopPropagation();
-            setOpen(!isOpen());
-        });
-
-        document.addEventListener('click', function (event) {
-            if (!isOpen()) {
-                return;
-            }
-            if (!header.contains(event.target)) {
-                setOpen(false);
-            }
-        });
-
-        document.addEventListener('keydown', function (event) {
-            if (event.key === 'Escape' && isOpen()) {
-                setOpen(false);
-                toggle.focus();
-            }
-        });
-
-        window.addEventListener('resize', function () {
-            if (window.matchMedia('(min-width: 721px)').matches && isOpen()) {
-                setOpen(false);
-            }
-        });
-    })();
-
     document.querySelectorAll('.site-ticker').forEach(function (ticker) {
         var viewport = ticker.querySelector('.site-ticker__viewport');
         var track = ticker.querySelector('.site-ticker__track');
