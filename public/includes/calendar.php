@@ -728,7 +728,7 @@ function calendar_gamepass_subscriptions(array $row): array
 }
 
 /**
- * Ícone Xbox (sphere) para plataforma Console — branco no tema escuro, verde no claro.
+ * Ícone Xbox (sphere) — fallback legado; preferir PNGs de plataforma.
  */
 function calendar_xbox_icon_html(int $size = 14): string
 {
@@ -738,10 +738,20 @@ function calendar_xbox_icon_html(int $size = 14): string
 }
 
 /**
- * @param array{icon?: string, label?: string} $platform
+ * @param array{icon?: string, label?: string, img?: string} $platform
  */
 function calendar_platform_icon_html(array $platform, int $size = 14): string
 {
+    $img = trim((string) ($platform['img'] ?? ''));
+    if ($img !== '') {
+        $sizePx = max(12, $size);
+        $src = htmlspecialchars($img, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        $alt = htmlspecialchars((string) ($platform['label'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+
+        return '<img class="cal-platform-icon" src="' . $src . '" width="' . $sizePx . '" height="' . $sizePx
+            . '" alt="' . $alt . '" loading="lazy" decoding="async">';
+    }
+
     if (($platform['icon'] ?? '') === 'xbox') {
         return calendar_xbox_icon_html($size);
     }
@@ -750,19 +760,45 @@ function calendar_platform_icon_html(array $platform, int $size = 14): string
 }
 
 /**
- * @return list<array{icon: string, label: string}>
+ * @return list<array{icon: string, label: string, img?: string}>
  */
 function calendar_gamepass_platforms(array $row): array
 {
     $out = [];
     if (!empty($row['platform_console'])) {
-        $out[] = ['icon' => 'xbox', 'label' => t('cal.console')];
+        $out[] = [
+            'icon' => 'xbox',
+            'img' => '/assets/img/platform-series.png',
+            'label' => t('cal.series'),
+        ];
+    }
+    if (!empty($row['platform_xbox_one'])) {
+        $out[] = [
+            'icon' => '',
+            'img' => '/assets/img/platform-xbox-one.png',
+            'label' => t('cal.xbox_one'),
+        ];
+    }
+    if (!empty($row['platform_handheld'])) {
+        $out[] = [
+            'icon' => '',
+            'img' => '/assets/img/platform-handheld.png',
+            'label' => t('cal.handheld'),
+        ];
     }
     if (!empty($row['platform_pc'])) {
-        $out[] = ['icon' => '💻', 'label' => 'PC'];
+        $out[] = [
+            'icon' => '💻',
+            'img' => '/assets/img/platform-pc.png',
+            'label' => 'PC',
+        ];
     }
     if (!empty($row['platform_cloud'])) {
-        $out[] = ['icon' => '☁️', 'label' => t('cal.cloud')];
+        $out[] = [
+            'icon' => '☁️',
+            'img' => '/assets/img/platform-cloud.png',
+            'label' => t('cal.cloud'),
+        ];
     }
 
     return $out;
@@ -1108,13 +1144,13 @@ function calendar_create_gamepass(PDO $pdo, array $data): int
         'INSERT INTO gp_releases (
             title, slug, cover_url, store_url, price_brl, trailer_url, show_on_tv, release_at, body,
             on_gamepass, on_ultimate, on_premium, on_essential, on_pc,
-            platform_console, platform_pc, platform_cloud,
+            platform_console, platform_xbox_one, platform_handheld, platform_pc, platform_cloud,
             play_anywhere, supports_pt_br,
             status, sort_order
          ) VALUES (
             :title, :slug, :cover_url, :store_url, :price_brl, :trailer_url, :show_on_tv, :release_at, :body,
             :on_gamepass, :on_ultimate, :on_premium, :on_essential, :on_pc,
-            :platform_console, :platform_pc, :platform_cloud,
+            :platform_console, :platform_xbox_one, :platform_handheld, :platform_pc, :platform_cloud,
             :play_anywhere, :supports_pt_br,
             :status, :sort_order
          )'
@@ -1144,6 +1180,8 @@ function calendar_update_gamepass(PDO $pdo, int $id, array $data): void
             on_essential = :on_essential,
             on_pc = :on_pc,
             platform_console = :platform_console,
+            platform_xbox_one = :platform_xbox_one,
+            platform_handheld = :platform_handheld,
             platform_pc = :platform_pc,
             platform_cloud = :platform_cloud,
             play_anywhere = :play_anywhere,
@@ -1331,6 +1369,12 @@ function render_calendar_game_card(array $row): string
     $platformKeys = [];
     if (!empty($row['platform_console'])) {
         $platformKeys[] = 'console';
+    }
+    if (!empty($row['platform_xbox_one'])) {
+        $platformKeys[] = 'xbox_one';
+    }
+    if (!empty($row['platform_handheld'])) {
+        $platformKeys[] = 'handheld';
     }
     if (!empty($row['platform_pc'])) {
         $platformKeys[] = 'pc';
@@ -1553,6 +1597,7 @@ function calendar_unified_month_items(array $gamepass, array $events, array $his
         foreach (calendar_gamepass_platforms($row) as $platform) {
             $platforms[] = [
                 'icon' => (string) ($platform['icon'] ?? ''),
+                'img' => (string) ($platform['img'] ?? ''),
                 'label' => (string) ($platform['label'] ?? ''),
             ];
         }
@@ -1756,9 +1801,11 @@ function render_calendar_content(array $config, array $gamepass, array $history,
                     <div class="gp-filters__group" role="group" aria-label="<?= e(t('cal.devices')) ?>">
                         <span class="gp-filters__label"><?= e(t('cal.devices')) ?></span>
                         <div class="gp-filters__chips">
-                            <button type="button" class="gp-filter" data-filter-type="platform" data-filter-value="console" aria-pressed="false"><?= calendar_xbox_icon_html(14) ?> <?= e(t('cal.console')) ?></button>
-                            <button type="button" class="gp-filter" data-filter-type="platform" data-filter-value="pc" aria-pressed="false">💻 PC</button>
-                            <button type="button" class="gp-filter" data-filter-type="platform" data-filter-value="cloud" aria-pressed="false">☁️ <?= e(t('cal.cloud')) ?></button>
+                            <button type="button" class="gp-filter" data-filter-type="platform" data-filter-value="console" aria-pressed="false"><img class="cal-platform-icon" src="/assets/img/platform-series.png" width="14" height="14" alt=""> <?= e(t('cal.series')) ?></button>
+                            <button type="button" class="gp-filter" data-filter-type="platform" data-filter-value="xbox_one" aria-pressed="false"><img class="cal-platform-icon" src="/assets/img/platform-xbox-one.png" width="14" height="14" alt=""> <?= e(t('cal.xbox_one')) ?></button>
+                            <button type="button" class="gp-filter" data-filter-type="platform" data-filter-value="handheld" aria-pressed="false"><img class="cal-platform-icon" src="/assets/img/platform-handheld.png" width="14" height="14" alt=""> <?= e(t('cal.handheld')) ?></button>
+                            <button type="button" class="gp-filter" data-filter-type="platform" data-filter-value="pc" aria-pressed="false"><img class="cal-platform-icon" src="/assets/img/platform-pc.png" width="14" height="14" alt=""> PC</button>
+                            <button type="button" class="gp-filter" data-filter-type="platform" data-filter-value="cloud" aria-pressed="false"><img class="cal-platform-icon" src="/assets/img/platform-cloud.png" width="14" height="14" alt=""> <?= e(t('cal.cloud')) ?></button>
                         </div>
                     </div>
                     <button type="button" class="gp-filters__clear" data-gp-clear hidden><?= e(t('cal.clear_filters')) ?></button>

@@ -226,6 +226,8 @@ function tvxbox_select_sql(): string
                    r.on_essential,
                    r.on_pc,
                    r.platform_console,
+                   r.platform_xbox_one,
+                   r.platform_handheld,
                    r.platform_pc,
                    r.platform_cloud,
                    r.play_anywhere,
@@ -263,6 +265,7 @@ function tvxbox_build_game_payload(array $row, ?int $releaseId = null): ?array
     foreach (calendar_gamepass_platforms($row) as $platform) {
         $platforms[] = [
             'icon' => (string) ($platform['icon'] ?? ''),
+            'img' => (string) ($platform['img'] ?? ''),
             'label' => (string) ($platform['label'] ?? ''),
         ];
     }
@@ -628,7 +631,7 @@ function tvxbox_list_for_player(PDO $pdo): array
         $stmt = $pdo->query(
             "SELECT id, title, body, cover_url, store_url, trailer_url, release_at, on_gamepass, price_brl,
                     on_ultimate, on_premium, on_essential, on_pc,
-                    platform_console, platform_pc, platform_cloud,
+                    platform_console, platform_xbox_one, platform_handheld, platform_pc, platform_cloud,
                     play_anywhere, supports_pt_br
              FROM gp_releases
              WHERE show_on_tv = 1

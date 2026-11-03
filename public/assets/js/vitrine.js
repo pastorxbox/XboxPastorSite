@@ -45,6 +45,62 @@
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
 
+    (function initMobileNav() {
+        if (!header) {
+            return;
+        }
+        var toggle = header.querySelector('[data-nav-toggle]');
+        var panel = header.querySelector('[data-header-panel]');
+        var label = header.querySelector('[data-nav-toggle-label]');
+        if (!toggle || !panel) {
+            return;
+        }
+
+        var openLabel = toggle.getAttribute('data-open-label') || (label ? label.textContent : 'Abrir menu');
+        var closeLabel = toggle.getAttribute('data-close-label') || 'Fechar menu';
+
+        function isOpen() {
+            return header.classList.contains('is-nav-open');
+        }
+
+        function setOpen(next) {
+            header.classList.toggle('is-nav-open', next);
+            toggle.setAttribute('aria-expanded', next ? 'true' : 'false');
+            document.body.classList.toggle('nav-open', next);
+            if (label) {
+                label.textContent = next ? closeLabel : openLabel;
+            }
+        }
+
+        toggle.addEventListener('click', function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            setOpen(!isOpen());
+        });
+
+        document.addEventListener('click', function (event) {
+            if (!isOpen()) {
+                return;
+            }
+            if (!header.contains(event.target)) {
+                setOpen(false);
+            }
+        });
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape' && isOpen()) {
+                setOpen(false);
+                toggle.focus();
+            }
+        });
+
+        window.addEventListener('resize', function () {
+            if (window.matchMedia('(min-width: 721px)').matches && isOpen()) {
+                setOpen(false);
+            }
+        });
+    })();
+
     document.querySelectorAll('.site-ticker').forEach(function (ticker) {
         var viewport = ticker.querySelector('.site-ticker__viewport');
         var track = ticker.querySelector('.site-ticker__track');
@@ -839,7 +895,10 @@
                 html += '<div class="cal-platforms">';
                 item.platforms.forEach(function (platform) {
                     var icon = '';
-                    if (platform.icon === 'xbox') {
+                    if (platform.img) {
+                        icon = '<img class="cal-platform-icon" src="' + escapeHtml(platform.img)
+                            + '" width="14" height="14" alt=""> ';
+                    } else if (platform.icon === 'xbox') {
                         icon = '<span class="icon-xbox" aria-hidden="true"></span> ';
                     } else if (platform.icon) {
                         icon = escapeHtml(platform.icon) + ' ';
@@ -1842,7 +1901,16 @@
                     var platforms = Array.isArray(game.platforms) ? game.platforms : [];
                     platforms.forEach(function (platform) {
                         var span = document.createElement('span');
-                        if (platform.icon === 'xbox') {
+                        if (platform.img) {
+                            var img = document.createElement('img');
+                            img.className = 'cal-platform-icon';
+                            img.src = String(platform.img);
+                            img.width = 14;
+                            img.height = 14;
+                            img.alt = '';
+                            span.appendChild(img);
+                            span.appendChild(document.createTextNode(' ' + (platform.label || '')));
+                        } else if (platform.icon === 'xbox') {
                             var xbox = document.createElement('span');
                             xbox.className = 'icon-xbox';
                             xbox.setAttribute('aria-hidden', 'true');

@@ -32,6 +32,12 @@ function nav_lucide_icon(string $kind, int $size = 18): string
         'search' => [
             'paths' => '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
         ],
+        'menu' => [
+            'paths' => '<path d="M4 5h16"/><path d="M4 12h16"/><path d="M4 19h16"/>',
+        ],
+        'close' => [
+            'paths' => '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+        ],
     ];
 
     if (!isset($icons[$kind])) {

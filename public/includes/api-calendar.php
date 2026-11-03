@@ -135,6 +135,12 @@ function api_parse_gamepass_payload(array $payload): array
         'on_essential' => $onEssential,
         'on_pc' => $onPc,
         'platform_console' => api_bool_flag($payload['platform_console'] ?? false),
+        'platform_xbox_one' => api_bool_flag(
+            $payload['platform_xbox_one'] ?? ($payload['platformXboxOne'] ?? false)
+        ),
+        'platform_handheld' => api_bool_flag(
+            $payload['platform_handheld'] ?? ($payload['platformHandheld'] ?? false)
+        ),
         'platform_pc' => api_bool_flag($payload['platform_pc'] ?? false),
         'platform_cloud' => api_bool_flag($payload['platform_cloud'] ?? false),
         'play_anywhere' => api_bool_flag(

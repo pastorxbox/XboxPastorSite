@@ -143,6 +143,8 @@ function default_section_translations(): array
             'es' => 'Buscar en el sitio…',
         ],
         'ui.open_search' => ['pt' => 'Abrir busca', 'en' => 'Open search', 'es' => 'Abrir búsqueda'],
+        'ui.open_menu' => ['pt' => 'Abrir menu', 'en' => 'Open menu', 'es' => 'Abrir menú'],
+        'ui.close_menu' => ['pt' => 'Fechar menu', 'en' => 'Close menu', 'es' => 'Cerrar menú'],
         'ui.copyright' => [
             'pt' => 'Todos os direitos reservados.',
             'en' => 'All rights reserved.',
@@ -455,6 +457,21 @@ function default_section_translations(): array
             'es' => 'Dispositivos',
         ],
         'cal.console' => ['pt' => 'Console', 'en' => 'Console', 'es' => 'Consola'],
+        'cal.series' => [
+            'pt' => 'Xbox Series X|S',
+            'en' => 'Xbox Series X|S',
+            'es' => 'Xbox Series X|S',
+        ],
+        'cal.xbox_one' => [
+            'pt' => 'Xbox One',
+            'en' => 'Xbox One',
+            'es' => 'Xbox One',
+        ],
+        'cal.handheld' => [
+            'pt' => 'Handheld',
+            'en' => 'Handheld',
+            'es' => 'Handheld',
+        ],
         'cal.cloud' => ['pt' => 'Nuvem', 'en' => 'Cloud', 'es' => 'Nube'],
         'cal.clear_filters' => [
             'pt' => 'Limpar filtros',
