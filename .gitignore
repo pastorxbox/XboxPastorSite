@@ -15,3 +15,6 @@ public/uploads/*
 *.log
 .DS_Store
 Thumbs.db
+
+# Backups de banco (não versionar dumps)
+/backups/
