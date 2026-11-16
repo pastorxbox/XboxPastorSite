@@ -41,6 +41,8 @@ require dirname(__DIR__) . '/includes/api-media.php';
 require dirname(__DIR__) . '/includes/api-brand.php';
 require dirname(__DIR__) . '/includes/api-home-today.php';
 require dirname(__DIR__) . '/includes/api-calendar.php';
+require dirname(__DIR__) . '/includes/catalog.php';
+require dirname(__DIR__) . '/includes/api-catalog.php';
 require dirname(__DIR__) . '/includes/ads.php';
 require dirname(__DIR__) . '/includes/api-ads.php';
 require dirname(__DIR__) . '/includes/tvxbox.php';
@@ -105,8 +107,16 @@ if ($path === '/api/calendar/gamepass') {
     api_handle_gamepass_collection($pdo, $config);
 }
 
+if (preg_match('#^/api/calendar/gamepass/(\d+)/catalog-link$#', $path, $matches) === 1) {
+    api_handle_gamepass_catalog_link($pdo, $config, (int) $matches[1]);
+}
+
 if (preg_match('#^/api/calendar/gamepass/(\d+)$#', $path, $matches) === 1) {
     api_handle_gamepass_item($pdo, $config, (int) $matches[1]);
+}
+
+if (preg_match('#^/api/catalog/games/([A-Za-z0-9_-]+)$#', $path, $matches) === 1) {
+    api_handle_catalog_game_upsert($pdo, $config, (string) $matches[1]);
 }
 
 if ($path === '/api/calendar/events') {

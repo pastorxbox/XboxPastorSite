@@ -156,6 +156,7 @@ Shell comum: header (marca, busca, nav progressiva, idioma), ads, sidebar TV Xbo
 | `api-posts.php` | API posts + i18n settings |
 | `api-media.php` | Upload de imagem |
 | `api-calendar.php` | API calendário |
+| `catalog.php` / `api-catalog.php` | Espelho Catálogo Xbox (Manager → site) |
 | `api-ads.php` | API ads |
 | `api-tvxbox.php` | API TV Xbox |
 | `api-brand.php` | Logo da marca |
@@ -231,6 +232,18 @@ Campos principais:
 - Extras: `play_anywhere` / `playAnywhere`, `supports_pt_br` / `supportsPtBr`, `show_on_tv`
 
 Efeito colateral: `tvxbox_sync_release_trailer()` quando trailer / `show_on_tv` mudam.
+
+#### Catálogo Xbox (Fase 2)
+
+| Método | Path | Notas |
+| --- | --- | --- |
+| PUT | `/api/catalog/games/{manager_game_id}` | Upsert `catalog_games` + produtos + `catalog_price_mirror`. **Nunca** altera `gp_releases.price_brl`. |
+| PUT | `/api/calendar/gamepass/{id}/catalog-link` | Só `catalog_game_id` (nullable) em `gp_releases`. |
+| GET | `/api/calendar/gamepass` | Inclui `catalog_game_id` em cada item (nullable). |
+
+Payload do upsert: `manager_game_id`, `slug`, `title`, `synopsis?`, `cover_url?`, `status`, `franchise?`, `products[]` (com `price?`), `do_not_overwrite_price_brl: true`.  
+Resposta: `{ id, slug, manager_game_id }`.  
+SQL: `sql/022_catalog_fase2.sql`. Deploy: `deploy/deploy-catalog-fase2.py`.
 
 #### Calendário — Eventos / História
 

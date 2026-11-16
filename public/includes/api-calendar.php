@@ -241,6 +241,25 @@ function api_handle_gamepass_create(PDO $pdo, array $config): never
     api_calendar_response('gamepass', $id);
 }
 
+/**
+ * Garante catalog_game_id no JSON (Fase 2). Nullable; nunca inventa preço.
+ *
+ * @param array<string, mixed> $row
+ * @return array<string, mixed>
+ */
+function api_gamepass_with_catalog_link(array $row): array
+{
+    if (!array_key_exists('catalog_game_id', $row)) {
+        $row['catalog_game_id'] = null;
+    } elseif ($row['catalog_game_id'] === '') {
+        $row['catalog_game_id'] = null;
+    } else {
+        $row['catalog_game_id'] = (string) $row['catalog_game_id'];
+    }
+
+    return $row;
+}
+
 function api_handle_gamepass_list(PDO $pdo, array $config): never
 {
     api_require_https($config);
@@ -249,6 +268,7 @@ function api_handle_gamepass_list(PDO $pdo, array $config): never
     if (function_exists('tvxbox_enrich_gamepass_items')) {
         $items = tvxbox_enrich_gamepass_items($pdo, $items);
     }
+    $items = array_map('api_gamepass_with_catalog_link', $items);
     api_json(200, ['items' => $items]);
 }
 
@@ -263,7 +283,7 @@ function api_handle_gamepass_get(PDO $pdo, array $config, int $id): never
     if (function_exists('tvxbox_enrich_gamepass_items')) {
         $row = tvxbox_enrich_gamepass_items($pdo, [$row])[0];
     }
-    api_json(200, ['item' => $row]);
+    api_json(200, ['item' => api_gamepass_with_catalog_link($row)]);
 }
 
 function api_handle_gamepass_delete(PDO $pdo, array $config, int $id): never
