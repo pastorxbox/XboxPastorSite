@@ -14,6 +14,8 @@ Options -Indexes
     RewriteRule ^noticias/?$ index.php?secao=noticias [L,QSA]
     RewriteRule ^artigos/?$ index.php?secao=artigos [L,QSA]
     RewriteRule ^calendario/?$ index.php?secao=calendario [L,QSA]
+    RewriteRule ^jogos/?$ index.php?secao=jogos [L,QSA]
+    RewriteRule ^jogos/([A-Za-z0-9_-]+)/?$ index.php?secao=jogos&slug=$1 [L,QSA]
     RewriteRule ^busca/?$ index.php?secao=busca [L,QSA]
     RewriteRule ^tag/([A-Za-z0-9_-]+)/?$ index.php?tag=$1 [L,QSA]
     RewriteRule ^api/?$ api/index.php [L]

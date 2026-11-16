@@ -42,7 +42,7 @@ function render_vitrine_page(
     $xScreenName = preg_replace('/[^A-Za-z0-9_]/', '', (string) ($config['x_screen_name'] ?? 'PastorXbox')) ?: 'PastorXbox';
     $xProfileUrl = 'https://x.com/' . rawurlencode($xScreenName);
     $gaMeasurementId = trim((string) ($config['ga_measurement_id'] ?? ''));
-    $assetVersion = '20261103navright2';
+    $assetVersion = '20261115jogos1';
     $siteBase = rtrim((string) ($config['site_base_url'] ?? ''), '/');
     $vapidPublicKey = htmlspecialchars(trim((string) ($config['vapid_public_key'] ?? '')), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
     $pdo = $GLOBALS['pdo'] ?? null;

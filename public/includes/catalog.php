@@ -167,3 +167,171 @@ function catalog_gamepass_has_catalog_column(PDO $pdo): bool
 
     return $cached;
 }
+
+const CATALOG_VITRINE_PER_PAGE = 24;
+
+function catalog_tables_ready(PDO $pdo): bool
+{
+    static $cached = null;
+    if ($cached !== null) {
+        return $cached;
+    }
+
+    try {
+        $stmt = $pdo->query("SHOW TABLES LIKE 'catalog_games'");
+        $cached = $stmt !== false && $stmt->fetch(PDO::FETCH_NUM) !== false;
+    } catch (Throwable) {
+        $cached = false;
+    }
+
+    return $cached;
+}
+
+function catalog_count_published(PDO $pdo): int
+{
+    if (!catalog_tables_ready($pdo)) {
+        return 0;
+    }
+
+    $stmt = $pdo->query("SELECT COUNT(*) FROM catalog_games WHERE status = 'PUBLISHED'");
+    if ($stmt === false) {
+        return 0;
+    }
+
+    return (int) $stmt->fetchColumn();
+}
+
+/**
+ * @return list<array<string, mixed>>
+ */
+function catalog_list_published(PDO $pdo, int $page = 1, int $perPage = CATALOG_VITRINE_PER_PAGE): array
+{
+    if (!catalog_tables_ready($pdo)) {
+        return [];
+    }
+
+    $page = max(1, $page);
+    $perPage = max(1, min(100, $perPage));
+    $offset = ($page - 1) * $perPage;
+
+    $stmt = $pdo->prepare(
+        "SELECT id, manager_game_id, slug, title, synopsis, cover_url, status,
+                franchise_name, franchise_slug, synced_at, updated_at
+         FROM catalog_games
+         WHERE status = 'PUBLISHED'
+         ORDER BY title ASC
+         LIMIT :limit OFFSET :offset"
+    );
+    $stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
+    $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+    $stmt->execute();
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    if (!is_array($rows) || $rows === []) {
+        return [];
+    }
+
+    $ids = array_map(static fn (array $row): string => (string) $row['id'], $rows);
+    $productsByGame = catalog_products_for_games($pdo, $ids);
+
+    foreach ($rows as &$row) {
+        $products = $productsByGame[(string) $row['id']] ?? [];
+        $row['products'] = $products;
+        $row['list_product'] = catalog_pick_list_product($products);
+    }
+    unset($row);
+
+    return $rows;
+}
+
+function catalog_get_published_by_slug(PDO $pdo, string $slug): ?array
+{
+    if (!catalog_tables_ready($pdo) || $slug === '') {
+        return null;
+    }
+
+    $stmt = $pdo->prepare(
+        "SELECT id, manager_game_id, slug, title, synopsis, cover_url, status,
+                franchise_name, franchise_slug, synced_at, updated_at
+         FROM catalog_games
+         WHERE status = 'PUBLISHED' AND slug = :slug
+         LIMIT 1"
+    );
+    $stmt->execute([':slug' => $slug]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!is_array($row)) {
+        return null;
+    }
+
+    $products = catalog_products_for_games($pdo, [(string) $row['id']]);
+    $row['products'] = $products[(string) $row['id']] ?? [];
+    $row['list_product'] = catalog_pick_list_product($row['products']);
+
+    return $row;
+}
+
+/**
+ * @param list<string> $gameIds
+ * @return array<string, list<array<string, mixed>>>
+ */
+function catalog_products_for_games(PDO $pdo, array $gameIds): array
+{
+    $gameIds = array_values(array_filter(array_map('strval', $gameIds), static fn (string $id): bool => $id !== ''));
+    if ($gameIds === []) {
+        return [];
+    }
+
+    $placeholders = implode(',', array_fill(0, count($gameIds), '?'));
+    $stmt = $pdo->prepare(
+        "SELECT catalog_game_id, store_product_id, store_url, edition_name, product_type,
+                market, currency, active, price_current, price_reference, price_status, price_checked_at
+         FROM catalog_store_products
+         WHERE active = 1 AND catalog_game_id IN ($placeholders)
+         ORDER BY catalog_game_id ASC,
+                  FIELD(product_type, 'GAME', 'BUNDLE', 'DLC', 'UNKNOWN') ASC,
+                  price_current IS NULL ASC,
+                  price_current ASC"
+    );
+    $stmt->execute($gameIds);
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    if (!is_array($rows)) {
+        return [];
+    }
+
+    $out = [];
+    foreach ($rows as $row) {
+        $gid = (string) $row['catalog_game_id'];
+        $out[$gid][] = $row;
+    }
+
+    return $out;
+}
+
+/**
+ * @param list<array<string, mixed>> $products
+ * @return array<string, mixed>|null
+ */
+function catalog_pick_list_product(array $products): ?array
+{
+    foreach ($products as $product) {
+        if ($product['price_current'] !== null && $product['price_current'] !== '') {
+            return $product;
+        }
+    }
+
+    return $products[0] ?? null;
+}
+
+function catalog_format_price(mixed $amount, string $currency = 'BRL'): string
+{
+    if ($amount === null || $amount === '') {
+        return '';
+    }
+
+    $value = (float) $amount;
+    $currency = strtoupper(trim($currency)) ?: 'BRL';
+    if ($currency === 'BRL') {
+        return 'R$ ' . number_format($value, 2, ',', '.');
+    }
+
+    return $currency . ' ' . number_format($value, 2, '.', ',');
+}

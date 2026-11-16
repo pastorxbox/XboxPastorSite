@@ -41,6 +41,62 @@ function default_section_translations(): array
         'site.news' => ['pt' => 'Notícias', 'en' => 'News', 'es' => 'Noticias'],
         'site.articles' => ['pt' => 'Artigos', 'en' => 'Articles', 'es' => 'Artículos'],
         'site.calendar' => ['pt' => 'Calendário', 'en' => 'Calendar', 'es' => 'Calendario'],
+        'jogos.title' => ['pt' => 'Jogos Xbox', 'en' => 'Xbox Games', 'es' => 'Juegos Xbox'],
+        'jogos.lead' => [
+            'pt' => 'Catálogo informativo com preços da Xbox Store (Brasil).',
+            'en' => 'Informational catalog with Xbox Store prices (Brazil).',
+            'es' => 'Catálogo informativo con precios de Xbox Store (Brasil).',
+        ],
+        'jogos.og' => [
+            'pt' => 'Catálogo informativo de jogos Xbox com preços da Store.',
+            'en' => 'Informational Xbox games catalog with Store prices.',
+            'es' => 'Catálogo informativo de juegos Xbox con precios de la Store.',
+        ],
+        'jogos.disclaimer' => [
+            'pt' => 'Preços informativos da Xbox Store. Podem estar desatualizados e não substituem o valor editorial do calendário.',
+            'en' => 'Informational Xbox Store prices. They may be outdated and do not replace the calendar editorial price.',
+            'es' => 'Precios informativos de Xbox Store. Pueden estar desactualizados y no sustituyen el precio editorial del calendario.',
+        ],
+        'jogos.empty' => [
+            'pt' => 'Nenhum jogo publicado no catálogo ainda.',
+            'en' => 'No published games in the catalog yet.',
+            'es' => 'Aún no hay juegos publicados en el catálogo.',
+        ],
+        'jogos.price_na' => [
+            'pt' => 'Preço indisponível',
+            'en' => 'Price unavailable',
+            'es' => 'Precio no disponible',
+        ],
+        'jogos.back' => [
+            'pt' => 'Voltar aos jogos',
+            'en' => 'Back to games',
+            'es' => 'Volver a los juegos',
+        ],
+        'jogos.editions' => [
+            'pt' => 'Edições e preços',
+            'en' => 'Editions and prices',
+            'es' => 'Ediciones y precios',
+        ],
+        'jogos.no_products' => [
+            'pt' => 'Nenhuma edição ativa sincronizada.',
+            'en' => 'No active editions synced.',
+            'es' => 'No hay ediciones activas sincronizadas.',
+        ],
+        'jogos.ref_price' => [
+            'pt' => 'Referência: {price}',
+            'en' => 'Reference: {price}',
+            'es' => 'Referencia: {price}',
+        ],
+        'jogos.stale' => [
+            'pt' => 'Preço possivelmente desatualizado.',
+            'en' => 'Price may be outdated.',
+            'es' => 'El precio puede estar desactualizado.',
+        ],
+        'jogos.store' => [
+            'pt' => 'Ver na Xbox Store',
+            'en' => 'View on Xbox Store',
+            'es' => 'Ver en Xbox Store',
+        ],
         'brand.tagline' => [
             'pt' => 'Xbox, Games & Propósito',
             'en' => 'Xbox, Games & Purpose',

@@ -23,6 +23,7 @@ require __DIR__ . '/includes/tags.php';
 require __DIR__ . '/includes/content.php';
 require_once __DIR__ . '/includes/home-today.php';
 require_once __DIR__ . '/includes/calendar.php';
+require_once __DIR__ . '/includes/catalog-vitrine.php';
 require __DIR__ . '/includes/ads.php';
 require __DIR__ . '/includes/vitrine-layout.php';
 
@@ -176,6 +177,89 @@ if ($secao === 'calendario') {
         $recentPosts,
         $popularTags,
         $calendarEvents
+    );
+    exit;
+}
+
+if ($secao === 'jogos') {
+    $slug = isset($_GET['slug']) ? strtolower(trim((string) $_GET['slug'])) : '';
+    if ($slug !== '') {
+        $game = catalog_get_published_by_slug($pdo, $slug);
+        if ($game === null) {
+            render_vitrine_page(
+                $config,
+                t('ui.not_found'),
+                render_not_found_content(),
+                ['nav' => 'none'],
+                404,
+                $recentPosts,
+                $popularTags
+            );
+            exit;
+        }
+
+        $detailUrl = site_jogos_url($config, 1, $slug);
+        $ogImage = trim((string) ($game['cover_url'] ?? ''));
+        $description = trim(excerpt_from_html((string) ($game['synopsis'] ?? '')));
+        if ($description === '') {
+            $description = t('jogos.og');
+        }
+        $detailMeta = [
+            'canonical' => $detailUrl,
+            'og_title' => (string) $game['title'],
+            'og_description' => $description,
+            'og_type' => 'website',
+            'og_url' => $detailUrl,
+            'nav' => 'none',
+        ];
+        if ($ogImage !== '') {
+            $detailMeta['og_image'] = $ogImage;
+        }
+        render_vitrine_page(
+            $config,
+            (string) $game['title'],
+            render_jogos_detail_content($config, $game),
+            $detailMeta,
+            200,
+            $recentPosts,
+            $popularTags
+        );
+        exit;
+    }
+
+    $totalGames = catalog_count_published($pdo);
+    $totalPages = max(1, (int) ceil($totalGames / CATALOG_VITRINE_PER_PAGE));
+    if ($page > $totalPages && $totalGames > 0) {
+        render_vitrine_page(
+            $config,
+            t('ui.not_found'),
+            render_not_found_content(),
+            ['nav' => 'none'],
+            404,
+            $recentPosts,
+            $popularTags
+        );
+        exit;
+    }
+
+    $games = catalog_list_published($pdo, $page);
+    $listUrl = site_jogos_url($config, $page);
+    $listTitle = t('jogos.title');
+    render_vitrine_page(
+        $config,
+        $listTitle,
+        render_jogos_list_content($config, $games, $page, $totalPages),
+        [
+            'canonical' => $listUrl,
+            'og_title' => $listTitle,
+            'og_description' => t('jogos.og'),
+            'og_type' => 'website',
+            'og_url' => $listUrl,
+            'nav' => 'none',
+        ],
+        200,
+        $recentPosts,
+        $popularTags
     );
     exit;
 }
